@@ -6,7 +6,7 @@ tidy_catalogue = excel_catalogue.rename(columns = {'Unnamed: 0': 'Star ID', 'Unn
 
 #Filtering Magnitude
 magnitude_filter = float(input("Input magnitude that you want to filter: "))
-bool_filtered = tidy_catalogue['Magnitude']<=3
+bool_filtered = tidy_catalogue['Magnitude']<=magnitude_filter
 filtered_catalogue = tidy_catalogue[bool_filtered]
 
 #Saving to CSV File
