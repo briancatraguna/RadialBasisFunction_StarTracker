@@ -1,35 +1,52 @@
 import pandas as pd
 import nested_function as nf
 import numpy as np
-from math import degrees
+from math import degrees,sqrt
 import cv2
 
 catalogue = pd.read_csv("Below_6.0_SAO.csv")
 
 ra_list = list(catalogue['RA'])
 de_list = list(catalogue['DE'])
+star_id_list = list(catalogue['Star ID'])
 
-for i in range(len(ra_list)):
-    images = []
-    ra_list[i] = round(degrees(ra_list[i]),3)
-    de_list[i] = round(degrees(de_list[i]),3)
-    for roll in range(0,360,10):
-        image = nf.create_star_image(ra_list[i],de_list[i],roll)
-        images.append(image)
-    if i == 1:
-        break
+image_test = nf.create_star_image(0,0,0)
+image_test = image_test.astype('uint8')
 
-#VALIDATION
-print(images)
-for i in range(len(images)):
-    image = images[i]
-    height,width = image.shape
-    y_center = height/2
-    x_center = width/2
-    x1 = int(x_center - 20)
-    x2 = int(x_center + 20)
-    y1 = int(y_center - 20)
-    y2 = int(y_center + 20)
-    cv2.rectangle(image,(x1,y1),(x2,y2),255,3)
-    nf.displayImg(image)
+#Set up the detector
+params = cv2.SimpleBlobDetector_Params()
+params.filterByInertia = False
+params.filterByConvexity = False
+params.minThreshold = 50
+params.maxThreshold = 255
+params.filterByColor = True
+params.blobColor = 255
+params.filterByArea = False
+params.minArea = 1
+detector = cv2.SimpleBlobDetector_create(params)
 
+keypoints = detector.detect(image_test)
+coord = []
+for index,keypoint in enumerate(keypoints):
+    x_centralstar = int(round(keypoints[index].pt[0]))
+    y_centralstar = int(round(keypoints[index].pt[1]))
+    coord.append((x_centralstar,y_centralstar))
+
+nf.displayImg(image_test)
+
+for co in coord:
+    pt1 = co[0]-10,co[1]-10
+    pt2 = co[0]+10,co[1]+10
+    cv2.rectangle(image_test,pt1,pt2,255,1)
+
+nf.displayImg(image_test)
+
+def extract_rb_features(bin_increment,image):
+    """[This function extracts the radial basis features from a given star image]
+
+    Args:
+        bin_increment ([int]): [The bin increment is the delta theta for the histogram of features]
+        image ([numpy array]): [The star image]
+    """
+    #Get all the centroids
+    pass
