@@ -45,16 +45,13 @@ def extract_rb_features(bin_increment,image,myu,f):
     detector = cv2.SimpleBlobDetector_create(params)
 
     keypoints = detector.detect(image)
-    coord = []
+    #Iterating through all the stars present
     for index,keypoint in enumerate(keypoints):
         x_centralstar = int(round(keypoints[index].pt[0]))
         y_centralstar = int(round(keypoints[index].pt[1]))
-        coord.append((x_centralstar,y_centralstar))
-
-#TO DO: GABUNG FOR LOOP GA PENTING
-    for co in coord:
-        x = co[0] - half_length_pixel
-        y = half_width_pixel - co[1]
+        #Converting to origin-in-the-middle coordinates
+        x = x_centralstar - half_length_pixel
+        y = half_width_pixel - y_centralstar
         pixel_distance_to_center = sqrt((x**2)+(y**2))
         angular_distance_to_center = round(atan((pixel_distance_to_center*myu)/f),3)
         lower_bound = 0
