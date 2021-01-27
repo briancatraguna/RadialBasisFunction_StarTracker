@@ -10,7 +10,11 @@ ra_list = list(catalogue['RA'])
 de_list = list(catalogue['DE'])
 star_id_list = list(catalogue['Star ID'])
 
-image_test = nf.create_star_image(0,0,0)
+#Test
+bin_increment = 2
+image = nf.create_star_image(0,0,0)
+myu = 1.12*(10**-6)
+f = 0.00304
 
 
 def extract_rb_features(bin_increment,image,myu,f):
@@ -29,7 +33,7 @@ def extract_rb_features(bin_increment,image,myu,f):
 
     #Initializing the bin list
     length_of_bin = FOVy_half//bin_increment
-    bin_list = [0] * length_of_bin
+    bin_list = [0] * int(length_of_bin)
 
     #Get all the centroids
     image = image.astype('uint8')
@@ -53,7 +57,8 @@ def extract_rb_features(bin_increment,image,myu,f):
         x = x_centralstar - half_length_pixel
         y = half_width_pixel - y_centralstar
         pixel_distance_to_center = sqrt((x**2)+(y**2))
-        angular_distance_to_center = round(atan((pixel_distance_to_center*myu)/f),3)
+        angular_distance_to_center = round(degrees(atan((pixel_distance_to_center*myu)/f)),3)
+        print(angular_distance_to_center)
         lower_bound = 0
         upper_bound = bin_increment
         bin_index = 0
@@ -66,3 +71,7 @@ def extract_rb_features(bin_increment,image,myu,f):
             bin_index += 1
 
     return bin_list
+
+bin_test = extract_rb_features(bin_increment,image,myu,f)
+print(bin_test)
+nf.displayImg(image)
