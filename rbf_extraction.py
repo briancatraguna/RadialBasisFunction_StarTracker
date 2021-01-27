@@ -17,11 +17,20 @@ def extract_rb_features(bin_increment,image,myu,f):
     """[This function extracts the radial basis features from a given star image]
 
     Args:
-        bin_increment ([int]): [The bin increment is the delta theta for the histogram of features]
+        bin_increment ([int]): [The bin increment is the delta theta for the histogram of features (IN DEGREES)]
         image ([numpy array]): [The star image]
         myu ([float]): [length per pixel]
         f ([float]): [focal length]
     """
+    #Defining some reusable variables to use
+    half_length_pixel = image.shape[1]/2
+    half_width_pixel = image.shape[0]/2
+    FOVy_half = degrees(atan((half_width_pixel*myu)/f))
+
+    #Initializing the bin list
+    length_of_bin = FOVy_half//bin_increment
+    bin_list = [0] * length_of_bin
+
     #Get all the centroids
     image = image.astype('uint8')
     params = cv2.SimpleBlobDetector_Params()
@@ -42,14 +51,21 @@ def extract_rb_features(bin_increment,image,myu,f):
         y_centralstar = int(round(keypoints[index].pt[1]))
         coord.append((x_centralstar,y_centralstar))
 
-    bins = []
+#TO DO: GABUNG FOR LOOP GA PENTING
     for co in coord:
-        x = co[0] - (image.shape[1]/2)
-        y = (image.shape[0]/2) - co[1]
+        x = co[0] - half_length_pixel
+        y = half_width_pixel - co[1]
         pixel_distance_to_center = sqrt((x**2)+(y**2))
         angular_distance_to_center = round(atan((pixel_distance_to_center*myu)/f),3)
-        
+        lower_bound = 0
+        upper_bound = bin_increment
+        bin_index = 0
+        #Evaluate which bin is this star in
+        while upper_bound <= FOVy_half:
+            if lower_bound <= angular_distance_to_center < upper_bound:
+                bin_list[bin_index] += 1
+            lower_bound += bin_increment
+            upper_bound += bin_increment
+            bin_index += 1
 
-    return coord
-
-coord = extract_rb_features(2,image_test)
+    return bin_list
