@@ -58,7 +58,8 @@ def extract_rb_features(bin_increment,image,myu,f):
         y = half_width_pixel - y_centralstar
         pixel_distance_to_center = sqrt((x**2)+(y**2))
         angular_distance_to_center = round(degrees(atan((pixel_distance_to_center*myu)/f)),3)
-        print(angular_distance_to_center)
+        if angular_distance_to_center > FOVy_half:
+            continue
         lower_bound = 0
         upper_bound = bin_increment
         bin_index = 0
