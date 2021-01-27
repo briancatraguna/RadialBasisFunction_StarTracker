@@ -11,35 +11,7 @@ de_list = list(catalogue['DE'])
 star_id_list = list(catalogue['Star ID'])
 
 image_test = nf.create_star_image(0,0,0)
-image_test = image_test.astype('uint8')
 
-#Set up the detector
-params = cv2.SimpleBlobDetector_Params()
-params.filterByInertia = False
-params.filterByConvexity = False
-params.minThreshold = 50
-params.maxThreshold = 255
-params.filterByColor = True
-params.blobColor = 255
-params.filterByArea = False
-params.minArea = 1
-detector = cv2.SimpleBlobDetector_create(params)
-
-keypoints = detector.detect(image_test)
-coord = []
-for index,keypoint in enumerate(keypoints):
-    x_centralstar = int(round(keypoints[index].pt[0]))
-    y_centralstar = int(round(keypoints[index].pt[1]))
-    coord.append((x_centralstar,y_centralstar))
-
-nf.displayImg(image_test)
-
-for co in coord:
-    pt1 = co[0]-10,co[1]-10
-    pt2 = co[0]+10,co[1]+10
-    cv2.rectangle(image_test,pt1,pt2,255,1)
-
-nf.displayImg(image_test)
 
 def extract_rb_features(bin_increment,image):
     """[This function extracts the radial basis features from a given star image]
@@ -49,4 +21,23 @@ def extract_rb_features(bin_increment,image):
         image ([numpy array]): [The star image]
     """
     #Get all the centroids
-    pass
+    image = image.astype('uint8')
+
+    #Set up the detector
+    params = cv2.SimpleBlobDetector_Params()
+    params.filterByInertia = False
+    params.filterByConvexity = False
+    params.minThreshold = 50
+    params.maxThreshold = 255
+    params.filterByColor = True
+    params.blobColor = 255
+    params.filterByArea = False
+    params.minArea = 1
+    detector = cv2.SimpleBlobDetector_create(params)
+
+    keypoints = detector.detect(image_test)
+    coord = []
+    for index,keypoint in enumerate(keypoints):
+        x_centralstar = int(round(keypoints[index].pt[0]))
+        y_centralstar = int(round(keypoints[index].pt[1]))
+        coord.append((x_centralstar,y_centralstar))
