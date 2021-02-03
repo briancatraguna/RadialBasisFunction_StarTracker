@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import cv2
+import random
 
 def displayImg(img,cmap='gray'):
     """[Displays image]
@@ -16,13 +17,16 @@ def displayImg(img,cmap='gray'):
     ax.imshow(img,cmap)
     plt.show()
 
-def create_star_image(ra,de,roll):
+def create_star_image(ra,de,roll,missing_star,unexpected_star,noise_weight):
     """[summary]
 
     Args:
         ra ([float]): [right ascension in degrees]
         de ([float]): [declination in degrees]
         roll ([float]): [roll in degrees]
+        missing_star ([int]) : [the number of missing star in the image]
+        unexpected_star ([int]) : [the number of unexpected star in the image]
+        noise_weight ([float]) : [number between 0 to 1. The weight of the noise]
     """
 
 
@@ -100,18 +104,19 @@ def create_star_image(ra,de,roll):
             cv2.circle(background,(x,y),radius,color,thickness=-1)
         return background
 
-    def add_noise(low,high,background):
+    def add_noise(low,high,background,weight):
         """[Adds noise to an image]
 
         Args:
             low ([int]): [lower threshold of the noise generated]
             high ([int]): [maximum pixel value of the noise generated]
             background ([numpy array]): [the image that is put noise on]
+            weight ([float]) : [the weight of the noise compared to the image]
         """
         row,col = np.shape(background)
         background = background.astype(int)
         noise = np.random.randint(low,high=high,size=(row,col))
-        noised_img = cv2.addWeighted(noise,0.1,background,0.9,0)
+        noised_img = cv2.addWeighted(noise,weight,background,1.0-weight,0)
         return noised_img
 
 
@@ -192,12 +197,19 @@ def create_star_image(ra,de,roll):
 
     background = np.zeros((w,l))
 
+    missing_star_index = []
+    while len(missing_star_index)<missing_star:
+        missing_star_index.append(random.randint(0,len(filtered_magnitude)))
+
     for i in range(len(filtered_magnitude)):
         x = round(l/2 + pixel_coordinates[i][0])
         y = round(w/2 - pixel_coordinates[i][1])
+        #Skip the background missing star number of times
+        if i in missing_star_index:
+            continue
         background = draw_star(x,y,filtered_magnitude[i],False,background)
 
     #Adding noise
-    background = add_noise(0,50,background=background)
+    background = add_noise(0,50,background,noise_weight)
 
     return background
