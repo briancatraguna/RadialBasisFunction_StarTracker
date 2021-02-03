@@ -10,15 +10,8 @@ ra_list = list(catalogue['RA'])
 de_list = list(catalogue['DE'])
 star_id_list = list(catalogue['Star ID'])
 
-#Test
-bin_increment = 2
-image = nf.create_star_image(0,0,0)
-myu = 1.12*(10**-6)
-f = 0.00304
-
-
 def extract_rb_features(bin_increment,image,myu,f):
-    """[This function extracts the radial basis features from a given star image]
+    """[This function extracts the radial basis features from a given star image and returns the bin feature vectors]
 
     Args:
         bin_increment ([int]): [The bin increment is the delta theta for the histogram of features (IN DEGREES)]
@@ -72,7 +65,48 @@ def extract_rb_features(bin_increment,image,myu,f):
             bin_index += 1
 
     return bin_list
+    
 
-bin_test = extract_rb_features(bin_increment,image,myu,f)
-print(bin_test)
-nf.displayImg(image)
+feature_vector_dataset = {
+    'Star ID'   : [],
+    'Bin 1'     : [],
+    'Bin 2'     : [],
+    'Bin 3'     : [],
+    'Bin 4'     : [],
+    'Bin 5'     : [],
+    'Bin 6'     : [],
+    'Bin 7'     : [],
+    'Bin 8'     : [],
+    'Bin 9'     : [],
+    'Bin 10'    : [],
+    'Bin 11'    : [],
+    'Bin 12'    : []
+}
+
+#Constants
+bin_increment = 2
+myu = 1.12*(10**-6)
+f = 0.00304
+
+for i in range(len(star_id_list)):
+    print("STAR {0} of {1}".format(i+1,len(star_id_list)))
+    star_id = star_id_list[i]
+    ra = degrees(ra_list[i])
+    de = degrees(de_list[i])
+    if i == 2:
+        break
+    for roll in range(0,360,90):
+        image = nf.create_star_image(ra,de,roll)
+        features = extract_rb_features(bin_increment=bin_increment,image=image,myu=myu,f=f)
+        feature_vector_dataset['Star ID'].append(star_id)
+        print("Creating features for Star ID: {0} and Roll: {1}".format(star_id,roll))
+        print("Features: {0}".format(features))
+        for bin_number in range(len(features)):
+            column_name = "Bin {0}".format(bin_number+1)
+            feature_vector_dataset[column_name].append(features[bin_number])
+
+feature_vector_dataframe = pd.DataFrame(
+    feature_vector_dataset,
+    columns=['Star ID','Bin 1','Bin 2','Bin 3','Bin 4','Bin 5','Bin 6','Bin 7','Bin 8','Bin 9','Bin 10','Bin 11','Bin 12'])
+
+feature_vector_dataframe.to_csv('Without_Noise.csv',index=False)
