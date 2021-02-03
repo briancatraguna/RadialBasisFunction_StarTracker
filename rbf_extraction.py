@@ -93,8 +93,6 @@ for i in range(len(star_id_list)):
     star_id = star_id_list[i]
     ra = degrees(ra_list[i])
     de = degrees(de_list[i])
-    if i == 2:
-        break
     for roll in range(0,360,90):
         image = nf.create_star_image(ra,de,roll)
         features = extract_rb_features(bin_increment=bin_increment,image=image,myu=myu,f=f)
