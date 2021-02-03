@@ -17,7 +17,8 @@ def displayImg(img,cmap='gray'):
     ax.imshow(img,cmap)
     plt.show()
 
-def create_star_image(ra,de,roll,missing_star,unexpected_star,noise_weight):
+
+def create_star_image(ra,de,roll,missing_star,unexpected_star,noise_weight,star_catalogue):
     """[summary]
 
     Args:
@@ -27,6 +28,9 @@ def create_star_image(ra,de,roll,missing_star,unexpected_star,noise_weight):
         missing_star ([int]) : [the number of missing star in the image]
         unexpected_star ([int]) : [the number of unexpected star in the image]
         noise_weight ([float]) : [number between 0 to 1. The weight of the noise]
+        star_catalogue ([pandas dataframe]) : [the star catalogue reference] - Read Code Snippet Below
+        ```col_list = ["Star ID","RA","DE","Magnitude"]```
+        ```star_catalogue = pd.read_csv('Below_6.0_SAO.csv',usecols=col_list)```
     """
 
 
@@ -144,8 +148,6 @@ def create_star_image(ra,de,roll,missing_star,unexpected_star,noise_weight):
     M_transpose = np.round(np.matrix.transpose(M),decimals=5)
 
     #Search for image-able stars
-    col_list = ["Star ID","RA","DE","Magnitude"]
-    star_catalogue = pd.read_csv('Below_6.0_SAO.csv',usecols=col_list)
     R = (sqrt((radians(FOVx)**2)+(radians(FOVy)**2))/2)
     alpha_start = (ra - (R/cos(de)))
     alpha_end = (ra + (R/cos(de)))
@@ -197,10 +199,12 @@ def create_star_image(ra,de,roll,missing_star,unexpected_star,noise_weight):
 
     background = np.zeros((w,l))
 
+    #Creating random index for missing star
     missing_star_index = []
     while len(missing_star_index)<missing_star:
         missing_star_index.append(random.randint(0,len(filtered_magnitude)))
 
+    #Drawing star
     for i in range(len(filtered_magnitude)):
         x = round(l/2 + pixel_coordinates[i][0])
         y = round(w/2 - pixel_coordinates[i][1])
@@ -208,6 +212,13 @@ def create_star_image(ra,de,roll,missing_star,unexpected_star,noise_weight):
         if i in missing_star_index:
             continue
         background = draw_star(x,y,filtered_magnitude[i],False,background)
+
+    #Drawing unexpected star
+    for i in range(unexpected_star):
+        random_x = random.randint(0,l)
+        random_y = random.randint(0,w)
+        random_magnitude = random.randint(-1,6)
+        background = draw_star(random_x,random_y,random_magnitude,False,background)
 
     #Adding noise
     background = add_noise(0,50,background,noise_weight)
