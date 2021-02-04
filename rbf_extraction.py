@@ -88,13 +88,16 @@ bin_increment = 2
 myu = 1.12*(10**-6)
 f = 0.00304
 
+col_list = ["Star ID","RA","DE","Magnitude"]
+star_catalogue = pd.read_csv('Below_6.0_SAO.csv',usecols=col_list)
+
 for i in range(len(star_id_list)):
     print("STAR {0} of {1}".format(i+1,len(star_id_list)))
     star_id = star_id_list[i]
     ra = degrees(ra_list[i])
     de = degrees(de_list[i])
-    for roll in range(0,360,90):
-        image = nf.create_star_image(ra,de,roll)
+    for roll in range(0,360,24):
+        image = nf.create_star_image(ra,de,roll,1,1,0.3,star_catalogue=star_catalogue)
         features = extract_rb_features(bin_increment=bin_increment,image=image,myu=myu,f=f)
         feature_vector_dataset['Star ID'].append(star_id)
         print("Creating features for Star ID: {0} and Roll: {1}".format(star_id,roll))
