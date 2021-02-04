@@ -110,4 +110,4 @@ feature_vector_dataframe = pd.DataFrame(
     feature_vector_dataset,
     columns=['Star ID','Bin 1','Bin 2','Bin 3','Bin 4','Bin 5','Bin 6','Bin 7','Bin 8','Bin 9','Bin 10','Bin 11','Bin 12'])
 
-feature_vector_dataframe.to_csv('Without_Noise.csv',index=False)
+# feature_vector_dataframe.to_csv('Without_Noise.csv',index=False)
