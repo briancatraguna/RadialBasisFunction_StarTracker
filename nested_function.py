@@ -18,7 +18,7 @@ def displayImg(img,cmap='gray'):
     plt.show()
 
 
-def create_star_image(ra,de,roll,missing_star,unexpected_star,noise_weight,star_catalogue):
+def create_star_image(ra,de,roll,star_catalogue,missing_star=0,unexpected_star=0,noise_weight=0.2):
     """[summary]
 
     Args:
@@ -163,6 +163,7 @@ def create_star_image(ra,de,roll,missing_star,unexpected_star,noise_weight,star_
     #Converting to star sensor coordinate system
     ra_i = list(stars_within_FOV['RA'])
     de_i = list(stars_within_FOV['DE'])
+    star_id = list(stars_within_FOV['Star ID'])
     star_sensor_coordinates = []
     for i in range(len(ra_i)):
         coordinates = dir_vector_to_star_sensor(ra_i[i],de_i[i],M_transpose=M_transpose)
