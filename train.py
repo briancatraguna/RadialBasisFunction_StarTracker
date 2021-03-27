@@ -1,42 +1,43 @@
-import numpy as np
-import pandas as pd
-import tensorflow as tf
+#import classes and functions
+import pandas
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.wrappers.scikit_learn import KerasClassifier
+from keras.utils import np_utils
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import KFold
+from sklearn.preprocessing import LabelEncoder
+from sklearn.pipeline import Pipeline
 
-#Separating labels and features
-dataset = pd.read_csv('Without_Noise.csv')
-x = dataset.iloc[:,1:].values #76545 rows, 12 columns
+#Load the dataset
+dataframe = pandas.read_csv("ann_features_binIncrement1.csv",header=None)
+dataset = dataframe.values[1:,:] #Separating the header
+X = dataset[:,1:].astype(float) #Features is from column 1 to the end, 12 feature dimensions
+Y = dataset[:,0] #Label is from column 0
 
-#Do one hot encoding for the label
-from sklearn.preprocessing import OneHotEncoder
-enc = OneHotEncoder()
-enc_y = pd.DataFrame(enc.fit_transform(dataset[['Star ID']]).toarray())
-y = enc_y.iloc[:,:].values #76545 rows, 5103 columns
+#Encode the output variable
+encoder = LabelEncoder()
+encoder.fit(Y)
+encoded_Y = encoder.transform(Y)
+dummy_y = np_utils.to_categorical(encoded_Y)
 
-#Split the dataset into the training set and test set
-from sklearn.model_selection import train_test_split
-X_train, X_test, y_train, y_test = train_test_split(x,y,test_size = 0.2,random_state=0)
+#Define the neural network model
+def baseline_model():
+    model = Sequential()
+    model.add(Dense(24,input_dim=12,activation='relu'))
+    model.add(Dense(units=48,activation='relu'))
+    model.add(Dense(units=96,activation='relu'))
+    model.add(Dense(units=192,activation='relu'))
+    model.add(Dense(units=384,activation='relu'))
+    model.add(Dense(units=301,activation='relu'))
+    model.add(Dense(units=301,activation='relu'))
+    model.add(Dense(301,activation='softmax'))
+    model.compile(loss='categorical_crossentropy',optimizer='adam',metrics=['accuracy'])
+    return model
 
-#Feature scaling
-from sklearn.preprocessing import MinMaxScaler
-minmaxsc = MinMaxScaler()
-X_train = minmaxsc.fit_transform(X_train)
-X_test = minmaxsc.transform(X_test)
+estimator = KerasClassifier(build_fn=baseline_model,epochs=200,batch_size=5,verbose=0)
 
-#Initializing the ANN as a sequence of layers
-ann = tf.keras.models.Sequential()
-#Adding the input layer (automatically) and the first hidden layer
-ann.add(tf.keras.layers.Dense(units=12,activation='relu'))
-#Second hidden layer
-ann.add(tf.keras.layers.Dense(units=144,activation='relu'))
-#Third hidden layer
-ann.add(tf.keras.layers.Dense(units=720,activation='relu'))
-#Fourth hidden layer
-ann.add(tf.keras.layers.Dense(units=3600,activation='relu'))
-#Output layer
-ann.add(tf.keras.layers.Dense(units=5103,activation='sigmoid'))
-
-#Compile the ANN
-ann.compile(optimizer='adam',loss='binary_crossentropy',metrics=['accuracy'])
-
-#Training the ANN on the Training set
-# ann.fit(X_train,y_train,batch_size=300,epochs=100)
+#Evaluate the model with k-Fold cross validation
+kfold = KFold(n_splits=10,shuffle=True)
+results = cross_val_score(estimator,X,dummy_y,cv=kfold)
+print("Baseline: {0} {1}".format(results.mean()*100,results.std()*100))
